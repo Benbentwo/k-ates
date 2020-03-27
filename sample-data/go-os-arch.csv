@@ -1,0 +1,6 @@
+NAME, GOOS,	GOARCH
+linux, linux,	amd64
+arm,	linux,	arm
+windows,	windows,	amd64
+windows 32,	windows,	386
+darwin (MacOS),	darwin,	amd64

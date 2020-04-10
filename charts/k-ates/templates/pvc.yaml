@@ -1,0 +1,59 @@
+{{- if .Values.project.sampleData.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: sample-data
+data:
+{{ (.Files.Glob "/Users/benjaminsmith/go/src/github.com/Benbentwo/k-ates/sample-data/*").AsConfig | indent 2 }}
+
+{{- end}}
+
+{{/*{{- if .Values.project.sampleData.enabled }}*/}}
+{{/*apiVersion: v1*/}}
+{{/*kind: PersistentVolumeClaim*/}}
+{{/*metadata:*/}}
+{{/*    name: my-local-data*/}}
+{{/*spec:*/}}
+{{/*    accessModes:*/}}
+{{/*        - ReadWriteMany*/}}
+{{/*    volumeMode: Filesystem*/}}
+{{/*    resources:*/}}
+{{/*        requests:*/}}
+{{/*            storage: 1Gi*/}}
+{{/*    selector:*/}}
+{{/*        matchLabels:*/}}
+{{/*            location: "local"*/}}
+{{/*---*/}}
+{{/*apiVersion: storage.k8s.io/v1*/}}
+{{/*kind: StorageClass*/}}
+{{/*metadata:*/}}
+{{/*    name: local-storage*/}}
+{{/*provisioner: kubernetes.io/no-provisioner*/}}
+{{/*volumeBindingMode: WaitForFirstConsumer*/}}
+{{/*---*/}}
+{{/*apiVersion: v1*/}}
+{{/*kind: PersistentVolume*/}}
+{{/*metadata:*/}}
+{{/*    name: localpv*/}}
+{{/*    labels:*/}}
+{{/*      location: "local"*/}}
+{{/*spec:*/}}
+{{/*    capacity:*/}}
+{{/*        storage: 1Gi*/}}
+{{/*    volumeMode: Filesystem*/}}
+{{/*    accessModes:*/}}
+{{/*        - ReadWriteMany*/}}
+{{/*    storageClassName: local-storage*/}}
+{{/*    local:*/}}
+{{/*        path: {{ .Values.project.sampleData.path }}*/}}
+{{/*    nodeAffinity:*/}}
+{{/*        required:*/}}
+{{/*            nodeSelectorTerms:*/}}
+{{/*                - matchExpressions:*/}}
+{{/*                      - key: kubernetes.io/hostname*/}}
+{{/*                        operator: In*/}}
+{{/*                        values:*/}}
+{{/*                            - docker-desktop*/}}
+{{/*                            - docker-for-desktop*/}}
+
+{{/*{{- end}}*/}}

@@ -17,10 +17,22 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-  - port: {{ .Values.service.externalPort }}
-    targetPort: {{ .Values.service.internalPort }}
+  - port: {{ .Values.project.port }}
+    targetPort: {{ .Values.project.port }}
     protocol: TCP
     name: http
   selector:
     app: {{ template "fullname" . }}
+{{- end }}
+
+{{- if .Values.project.ambassador.enabled }}
+---
+apiVersion: getambassador.io/v1
+kind:  Mapping
+metadata:
+  name:  k-ates
+spec:
+  prefix: {{ .Values.project.root }}
+  service: {{ .Values.service.name }}:{{ .Values.project.port }}
+
 {{- end }}

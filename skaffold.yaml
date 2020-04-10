@@ -16,7 +16,7 @@ profiles:
   build:
     tagPolicy:
       envTemplate:
-        template: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}:{{.DIGEST_HEX}}'
+        template: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}:{{.USER}}'
     local: {}
   deploy:
     helm:
@@ -25,4 +25,6 @@ profiles:
         chartPath: charts/k-ates
         setValueTemplates:
           image.repository: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}'
-          image.tag: '{{.DIGEST_HEX}}'
+          image.tag: '{{.USER}}'
+          project.ambassador.enabled: true
+          project.sampleData.enabled: true

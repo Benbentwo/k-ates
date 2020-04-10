@@ -1,10 +1,14 @@
 FROM golang:1.12.4 AS builder
 
-# Default to localhost
-ARG port=80
-ENV PORT=$port
-ARG root=/
-ENV ROOT=$root
+
+# Build Args
+ARG gitServer=github.com
+ARG gitOrg=Benbentwo
+ARG gitRepo=k-ates
+
+ENV GIT_SERVER=$gitServer
+ENV GIT_ORG=$gitOrg
+ENV GIT_REPO=$gitRepo
 
 # Build arguments
 ARG binary_name=k-ates
@@ -13,16 +17,28 @@ ARG target_os=linux
 ARG target_arch=amd64
 
 # Build the server Binary
-WORKDIR /app/
+WORKDIR /go/src/${GIT_SERVER}/${GIT_ORG}/${GIT_REPO}
 ADD . ./
-RUN CGO_ENABLED=0 GOOS=${target_os} GOARCH=${target_arch} go build -a -o ${binary_name} main.go
+RUN go get -u ./...
+RUN CGO_ENABLED=0 GOOS=${target_os} GOARCH=${target_arch} go build -a -o /app/${binary_name} main.go
 
-FROM scratch
+RUN ls /app
+#FROM scratch
+
+# Default to localhost
+# Should match the default set in values.yaml
+ARG port=80
+ARG root=/
+ENV PORT=$port
+ENV ROOT=$root
 
 WORKDIR /app/
-COPY --from=builder /app/k-ates .
+#COPY --from=builder /app/${binary_name} .
+RUN ["chmod", "-R", "+x", "/app"]
 EXPOSE ${PORT}
 
-CMD ls -al
-#ENTRYPOINT bash
+RUN ls -la /app
+CMD /app/k-ates
+#ENTRYPOINT ["cat", "/dev/null"]
+#ENTRYPOINT /app/${binary_name}
 #CMD 'go run main.go'

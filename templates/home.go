@@ -1,6 +1,9 @@
 package templates
 
-var Table = `
+type Template string
+
+// Possible types of merges for the Git Provider merge API
+var homePage = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,5 +38,13 @@ var Table = `
     </table>
 </div>
 </body>
-</html>
-`
+</html>`
+var (
+	HOME  Template = Template(homePage)
+	TABLE Template = Template(Table)
+)
+
+func (template Template) GetTemplate() string {
+	return string(template)
+
+}

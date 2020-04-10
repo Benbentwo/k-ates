@@ -36,24 +36,36 @@ spec:
 {{- end }}
         envFrom:
 {{ toYaml .Values.envFrom | indent 10 }}
+{{- if .Values.project.sampleData.enabled }}
+        volumeMounts:
+          - mountPath: /app/sample-data
+            name: sample-data
+{{- end}}
         ports:
         - containerPort: {{ .Values.service.internalPort }}
-        livenessProbe:
-          httpGet:
-            path: {{ .Values.probePath }}
-            port: {{ .Values.service.internalPort }}
-          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-          successThreshold: {{ .Values.livenessProbe.successThreshold }}
-          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-        readinessProbe:
-          httpGet:
-            path: {{ .Values.probePath }}
-            port: {{ .Values.service.internalPort }}
-          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
-          successThreshold: {{ .Values.readinessProbe.successThreshold }}
-          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+#        livenessProbe:
+#          httpGet:
+#            path: {{ .Values.probePath }}
+#            port: {{ .Values.service.internalPort }}
+#          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+#          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+#          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+#          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+#        readinessProbe:
+#          httpGet:
+#            path: {{ .Values.probePath }}
+#            port: {{ .Values.service.internalPort }}
+#          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+#          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+#          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
         resources:
 {{ toYaml .Values.resources | indent 12 }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+{{- if .Values.project.sampleData.enabled }}
+      volumes:
+      - name: sample-data
+        configMap:
+          name: sample-data
+          defaultMode: 420
+{{- end}}
 {{- end }}

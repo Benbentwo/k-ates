@@ -6,6 +6,11 @@ var (
 	K8    Template = Template(K8Table)
 )
 
+const (
+	RefreshText = "Refresh"
+	RefreshUrl  = "."
+)
+
 func (template Template) GetTemplate() string {
 	return string(template)
 
@@ -31,4 +36,9 @@ type TableTemplate struct {
 	Filename string
 	Headers  []string
 	Rows     [][]string
+}
+
+var RefreshButton = ButtonLinks{
+	Href: RefreshUrl,
+	Text: RefreshText,
 }

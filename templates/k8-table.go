@@ -36,6 +36,7 @@ ul.breadcrumb li a:hover {
 <body>
 <div class="container">
 	{{ if .BreadCrumbs }}
+		<div/>
 		<ul class="breadcrumb">
 			{{ range .BreadCrumbs }}
 				{{ if .Href }}

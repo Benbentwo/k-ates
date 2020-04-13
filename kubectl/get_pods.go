@@ -74,16 +74,9 @@ func GetPodsHandler(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		Buttons: []templates.ButtonLinks{
-			{
-				Href: ".",
-				Text: "Refresh",
-			},
+			templates.RefreshButton,
 		},
-		Headers: []string{
-			// "A", "B",
-		},
+		Headers: []string{},
 	})
 
-	// t, _ := template.New("table").Parse(templates.Table)
-	// t.Execute(w, table)
 }

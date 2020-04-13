@@ -78,6 +78,4 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 
-	// t, _ := template.New("table").Parse(templates.Table)
-	// t.Execute(w, table)
 }

@@ -16,7 +16,6 @@ import (
 //     - Auto would split the url of the page into breadcrumbs
 //     - Manual would allow manual addition of breadcrumbs
 //     - Off just removes the sect.
-//  - Make Html templates actual HTML files and use more modular parts.
 
 var (
 	Log   = util.Log
@@ -27,26 +26,15 @@ var (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	var tmplt templates.Template
-	rootPath := util.GetRootPath()
-	filepath := r.URL.Path[len(rootPath):]
-	Log(DEBUG, util.ColorInfo("FilePath: \"")+filepath+util.ColorInfo("\""))
-	// log.Logger().Infof("FilePath: `%s`", util.ColorInfo(filepath))
-	Log(DEBUG, util.ColorInfo("RootPath: \"")+rootPath+util.ColorInfo("\""))
-
-	if strings.TrimSpace(filepath) == "" {
-		Log(DEBUG, "Display Home Page")
-		tmplt = templates.HOME
-		util.LoadTemplate(w, tmplt, templates.Home{
-			Filename: "Home Page",
-			Headers: []templates.ButtonLinks{
-				{
-					Text: "Kubectl",
-					Href: "/kubectl",
-				},
+	util.LoadTemplate(w, templates.HOME, templates.Home{
+		Filename: "Home Page",
+		Headers: []templates.ButtonLinks{
+			{
+				Text: "Kubectl",
+				Href: "/kubectl",
 			},
-		})
-	}
+		},
+	})
 
 }
 func loadCSVFileData(w http.ResponseWriter, r *http.Request, filepath string) (parsers.Table, error) {

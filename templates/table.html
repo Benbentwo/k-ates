@@ -1,9 +1,3 @@
-package templates
-
-type Template string
-
-// Possible types of merges for the Git Provider merge API
-var homePage = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,12 +14,22 @@ var homePage = `
         <tr>
             {{range .Headers}}
             <th>
-                <a href="{{.Href}}"><button>{{.Text}}</button></a>
+                {{.}}
             </th>
             {{end}}
         </tr>
+
         </thead>
+        <tbody>
+        {{range .Rows}}
+        <tr>
+            {{range .}}
+            <td>{{printf "%s" .}}</td>
+            {{end}}
+        </tr>
+        {{end}}
+        </tbody>
     </table>
 </div>
 </body>
-</html>`
+</html>

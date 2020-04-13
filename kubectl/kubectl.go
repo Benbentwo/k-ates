@@ -63,11 +63,6 @@ var rootPath = util.GetRootPath()
 var TotalGetPodRoute = rootPath + GetPodRoute
 
 func Handler(w http.ResponseWriter, r *http.Request) {
-	filepath := r.URL.Path[len(rootPath):]
-	Log(DEBUG, util.ColorInfo("FilePath: \"")+filepath+util.ColorInfo("\""))
-	Log(DEBUG, util.ColorInfo("RootPath: \"")+rootPath+util.ColorInfo("\""))
-
-	Log(DEBUG, "Display Kubectl Page")
 	util.LoadTemplate(w, templates.HOME, templates.Home{
 		Filename: "Kubectl Home Page",
 		Headers: []templates.ButtonLinks{

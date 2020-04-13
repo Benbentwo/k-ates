@@ -1,9 +1,15 @@
 package templates
 
+import (
+	"io/ioutil"
+)
+
+type Template string
+
 var (
-	HOME  Template = Template(homePage)
-	TABLE Template = Template(Table)
-	K8    Template = Template(K8Table)
+	HOME  Template
+	TABLE Template
+	K8    Template
 )
 
 const (
@@ -11,9 +17,38 @@ const (
 	RefreshUrl  = "."
 )
 
+func InitTemplates() error {
+	tmpl, err := CreateTemplate("templates/home.html")
+	if err != nil {
+		return err
+	}
+	HOME = Template(tmpl)
+
+	tmpl, err = CreateTemplate("templates/table.html")
+	if err != nil {
+		return err
+	}
+	TABLE = Template(tmpl)
+
+	tmpl, err = CreateTemplate("templates/k8-table.html")
+	if err != nil {
+		return err
+	}
+	K8 = Template(tmpl)
+	return nil
+}
+
 func (template Template) GetTemplate() string {
 	return string(template)
 
+}
+
+func CreateTemplate(file string) (string, error) {
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	return string(content), nil
 }
 
 type ButtonLinks struct {

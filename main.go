@@ -82,7 +82,10 @@ func loadCSVFileData(w http.ResponseWriter, r *http.Request, filepath string) (p
 
 func main() {
 	root := util.GetRootPath()
-
+	err := templates.InitTemplates()
+	if err != nil {
+		panic(err)
+	}
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "80"

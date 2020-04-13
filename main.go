@@ -26,12 +26,13 @@ var (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	rootPath := util.GetRootPath()
 	util.LoadTemplate(w, templates.HOME, templates.Home{
 		Filename: "Home Page",
 		Headers: []templates.ButtonLinks{
 			{
 				Text: "Kubectl",
-				Href: "/kubectl",
+				Href: rootPath + "kubectl",
 			},
 		},
 	})

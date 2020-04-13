@@ -1,6 +1,7 @@
 package util
 
 import (
+	"net/http"
 	"os"
 )
 
@@ -10,4 +11,8 @@ func GetRootPath() string {
 		rootPath = "/"
 	}
 	return rootPath
+}
+func GetFilePath(r *http.Request) string {
+	rootPath := GetRootPath()
+	return r.URL.Path[len(rootPath):]
 }

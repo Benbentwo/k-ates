@@ -20,31 +20,12 @@ var homePage = `
         <tr>
             {{range .Headers}}
             <th>
-                {{.}}
+                <a href="{{.Href}}"><button>{{.Text}}</button></a>
             </th>
             {{end}}
         </tr>
-
         </thead>
-        <tbody>
-        {{range .Rows}}
-        <tr>
-            {{range .}}
-            <td>{{printf "%s" .}}</td>
-            {{end}}
-        </tr>
-        {{end}}
-        </tbody>
     </table>
 </div>
 </body>
 </html>`
-var (
-	HOME  Template = Template(homePage)
-	TABLE Template = Template(Table)
-)
-
-func (template Template) GetTemplate() string {
-	return string(template)
-
-}

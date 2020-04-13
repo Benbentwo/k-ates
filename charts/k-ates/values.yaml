@@ -6,6 +6,8 @@ project:
   sampleData:
     enabled: false
     path: /Users/benjaminsmith/go/src/github.com/Benbentwo/k-ates/sample-data
+  crb:
+    name: k-ates
 
 
 # Default values for Go projects.

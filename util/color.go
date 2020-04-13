@@ -28,6 +28,7 @@ var ColorBold = color.New(color.Bold).SprintFunc()
 // ColorAnswer returns a new function that returns answer-colorized (cyan) strings for the
 // given arguments with fmt.Sprint().
 var ColorAnswer = color.New(color.FgCyan).SprintFunc()
+var ColorDebug = color.New(color.FgCyan).SprintFunc()
 
 var colorMap = map[string]color.Attribute{
 	// formatting

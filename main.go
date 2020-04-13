@@ -1,55 +1,53 @@
 package main
 
 import (
-	"fmt"
+	"github.com/Benbentwo/k-ates/kubectl"
 	"github.com/Benbentwo/k-ates/parsers"
 	"github.com/Benbentwo/k-ates/templates"
 	"github.com/Benbentwo/k-ates/util"
-	"github.com/fatih/color"
-	"github.com/jenkins-x/jx/pkg/log"
-	"html/template"
 	"net/http"
 	"os"
 	"strings"
 )
 
+// TODO's:
+//  - it'd be nice to have a little console at the bottom that allows logs to be printed to a 'console' on the web page.
+//  - Breadcrumbs would be nice to have a Type: (Auto|Manual|Off) flag where:
+//     - Auto would split the url of the page into breadcrumbs
+//     - Manual would allow manual addition of breadcrumbs
+//     - Off just removes the sect.
+//  - Make Html templates actual HTML files and use more modular parts.
+
 var (
-	yellow = color.New(color.FgYellow).SprintFunc()
-	red    = color.New(color.FgRed).SprintFunc()
-	white  = color.New(color.FgWhite).SprintFunc()
+	Log   = util.Log
+	DEBUG = util.DEBUG
+	INFO  = util.INFO
+	WARN  = util.WARN
+	ERROR = util.ERROR
 )
-
-type UnsupportedError struct{}
-
-func (e UnsupportedError) Error() string {
-	return "Unsupported file type"
-}
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	var tmplt templates.Template
-	rootPath := os.Getenv("ROOT")
-	if rootPath == "" {
-		rootPath = "/"
-	}
+	rootPath := util.GetRootPath()
 	filepath := r.URL.Path[len(rootPath):]
-	log.Logger().Infof("FilePath: `%s`", util.ColorInfo(filepath))
+	Log(DEBUG, util.ColorInfo("FilePath: \"")+filepath+util.ColorInfo("\""))
+	// log.Logger().Infof("FilePath: `%s`", util.ColorInfo(filepath))
+	Log(DEBUG, util.ColorInfo("RootPath: \"")+rootPath+util.ColorInfo("\""))
 
-	if strings.TrimSpace(rootPath) == "" {
+	if strings.TrimSpace(filepath) == "" {
+		Log(DEBUG, "Display Home Page")
 		tmplt = templates.HOME
-		loadTemplate(w, tmplt, parsers.Table{
+		util.LoadTemplate(w, tmplt, templates.Home{
 			Filename: "Home Page",
+			Headers: []templates.ButtonLinks{
+				{
+					Text: "Kubectl",
+					Href: "/kubectl",
+				},
+			},
 		})
-	} else {
-		tmplt = templates.TABLE
-		table, err := loadCSVFileData(w, r, filepath)
-		if err != nil {
-			log.Logger().Errorf("%s: %s", red("ERRORs"), white(err))
-		}
-		loadTemplate(w, tmplt, table)
 	}
 
-	// t, _ := template.New("table").Parse(templates.Table)
-	// t.Execute(w, table)
 }
 func loadCSVFileData(w http.ResponseWriter, r *http.Request, filepath string) (parsers.Table, error) {
 	ext := filepath[strings.LastIndex(filepath, ".")+1:]
@@ -65,60 +63,33 @@ func loadCSVFileData(w http.ResponseWriter, r *http.Request, filepath string) (p
 		}
 		parser = parsers.FixedWidthParser{Columns: columns}
 	default:
-		handleError(w, UnsupportedError{})
-		return parsers.Table{}, UnsupportedError{}
+		util.HandleError(w, util.UnsupportedError{})
+		return parsers.Table{}, util.UnsupportedError{}
 	}
 	reader, e := parsers.DecodeFile(filepath)
 	if e != nil {
-		handleError(w, e)
-		return parsers.Table{}, UnsupportedError{}
+		util.HandleError(w, e)
+		return parsers.Table{}, util.UnsupportedError{}
 	}
 	table, e := parser.Parse(reader)
 	if e != nil {
-		handleError(w, e)
-		return parsers.Table{}, UnsupportedError{}
+		util.HandleError(w, e)
+		return parsers.Table{}, util.UnsupportedError{}
 	}
 	table.Filename = filepath
 	return table, nil
 }
-func loadTemplate(w http.ResponseWriter, temp templates.Template, content interface{}) {
-	t, _ := template.New("table").Parse(temp.GetTemplate())
-	err := t.Execute(w, content)
-	if err != nil {
-		handleError(w, err)
-		return
-	}
-}
-func handleError(w http.ResponseWriter, e error) {
-	err := e.Error()
-	var status int
-	switch t := e.(type) {
-	case *os.PathError:
-		err = fmt.Sprintf("File '%s' not found", t.Path)
-		status = 404
-	case UnsupportedError:
-		status = 400
-	case parsers.EmptyFileError:
-		status = 400
-	case parsers.ColNotFound:
-		status = 400
-	default:
-		err = fmt.Sprintf("Something went wrong that was unforseen: %s", e.Error())
-		status = 500
-	}
-	http.Error(w, err, status)
-}
 
 func main() {
-	root := os.Getenv("ROOT")
-	if root == "" { // These aren't needed on the dockerized version as the ARG default sets them.
-		root = "/" //    They are still nice to have for local go building though.
-	}
+	root := util.GetRootPath()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "80"
 	}
 
 	http.HandleFunc(root, handler)
+	http.HandleFunc(root+"kubectl/", kubectl.Handler)
+	http.HandleFunc(root+"kubectl/get/pods/", kubectl.GetPodsHandler)
 	_ = http.ListenAndServe(":"+port, nil)
 }

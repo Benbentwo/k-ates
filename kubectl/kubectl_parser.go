@@ -2,6 +2,7 @@ package kubectl
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"strconv"
 	"strings"
 )
 
@@ -19,7 +20,7 @@ func getHeaders(list v1.PodList) []string {
 	headers := make([]string, 0)
 	headers = append(headers, "Namespace")
 	headers = append(headers, "Name")
-	headers = append(headers, "Ready")
+	headers = append(headers, "Ready Containers")
 	for _, pod := range list.Items {
 		for _, container := range pod.Status.ContainerStatuses {
 			if !container.Ready {
@@ -41,35 +42,35 @@ func PodToStrArr(pod v1.Pod) []string {
 
 	data = append(data, pod.Name)
 
-	ready := 0
 	notReady := make([]string, 0)
+	ready := make([]string, 0)
 	someNotReady := false
 	for _, container := range pod.Status.ContainerStatuses {
 		if container.Ready {
-			ready++
+			ready = append(ready, container.Name)
 		} else {
 			someNotReady = true
 			notReady = append(notReady, container.Name)
 		}
 	}
 
-	data = append(data, string(ready)+"/"+string(len(pod.Spec.Containers)))
+	data = append(data, strings.Join(ready, "\n"))
 
 	if someNotReady {
 		data = append(data, strings.Join(notReady, ","))
 	}
 
-	data = append(data, pod.Status.Message)
+	data = append(data, string(pod.Status.Phase))
 
 	count := 0
 	for _, container := range pod.Status.ContainerStatuses {
 		count += int(container.RestartCount)
 	}
-	data = append(data, string(count))
+	data = append(data, strconv.Itoa(count))
 
 	labels := make([]string, 0)
 	for key, value := range pod.ObjectMeta.Labels {
-		labels = append(labels, key+": "+value)
+		labels = append(labels, strings.TrimSpace(key)+"="+strings.TrimSpace(value))
 	}
 	data = append(data, strings.Join(labels, "\n"))
 

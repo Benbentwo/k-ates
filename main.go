@@ -84,10 +84,9 @@ func main() {
 	kubectl.NewKubectl()
 
 	http.HandleFunc(root, handler)
-	util.Log(util.DEBUG, "root")
 	http.HandleFunc(root+"kubectl/", kubectl.Handler)
-	util.Log(util.DEBUG, "Kubectl")
+	// http.HandleFunc(root+"kubectl/context", kubectl.HandleNewContext)
 	http.HandleFunc(root+"kubectl/get/pods/", kubectl.GetPodsHandler)
-	util.Log(util.DEBUG, "Kubectl Pods")
+
 	_ = http.ListenAndServe(":"+port, nil)
 }

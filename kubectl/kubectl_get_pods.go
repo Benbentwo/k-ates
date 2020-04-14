@@ -46,6 +46,10 @@ func GetPodsHandler(w http.ResponseWriter, r *http.Request) {
 		},
 		Buttons: []templates.ButtonLinks{
 			templates.RefreshButton,
+			// {
+			// 	Text: "Refresh Context",
+			// 	Href: rootPath + "kubectl/context/",
+			// },
 		},
 		Headers: []string{},
 	}

@@ -105,3 +105,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	})
 
 }
+
+func HandleNewContext(_ http.ResponseWriter, _ *http.Request) {
+	NewKubectl()
+}

@@ -1,0 +1,228 @@
+{
+  "apiVersion": "v1",
+  "kind": "Pod",
+  "metadata": {
+    "annotations": {
+      "checksum/config": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    "creationTimestamp": "2020-04-13T18:34:31Z",
+    "generateName": "ambassador-69d88f894c-",
+    "labels": {
+      "app.kubernetes.io/instance": "ambassador",
+      "app.kubernetes.io/name": "ambassador",
+      "app.kubernetes.io/part-of": "ambassador",
+      "pod-template-hash": "69d88f894c"
+    },
+    "name": "ambassador-69d88f894c-4hgth",
+    "namespace": "default",
+    "ownerReferences": [
+      {
+        "apiVersion": "apps/v1",
+        "blockOwnerDeletion": true,
+        "controller": true,
+        "kind": "ReplicaSet",
+        "name": "ambassador-69d88f894c",
+        "uid": "e1905cab-f1a8-421a-b226-38a6e0a04ebd"
+      }
+    ],
+    "resourceVersion": "5740",
+    "selfLink": "/api/v1/namespaces/default/pods/ambassador-69d88f894c-4hgth",
+    "uid": "d0554008-1395-4cbd-89f7-cb3e95e4c410"
+  },
+  "spec": {
+    "containers": [
+      {
+        "env": [
+          {
+            "name": "HOST_IP",
+            "valueFrom": {
+              "fieldRef": {
+                "apiVersion": "v1",
+                "fieldPath": "status.hostIP"
+              }
+            }
+          },
+          {
+            "name": "AMBASSADOR_NAMESPACE",
+            "valueFrom": {
+              "fieldRef": {
+                "apiVersion": "v1",
+                "fieldPath": "metadata.namespace"
+              }
+            }
+          }
+        ],
+        "image": "quay.io/datawire/ambassador:0.86.1",
+        "imagePullPolicy": "IfNotPresent",
+        "livenessProbe": {
+          "failureThreshold": 3,
+          "httpGet": {
+            "path": "/ambassador/v0/check_alive",
+            "port": "admin",
+            "scheme": "HTTP"
+          },
+          "initialDelaySeconds": 30,
+          "periodSeconds": 3,
+          "successThreshold": 1,
+          "timeoutSeconds": 1
+        },
+        "name": "ambassador",
+        "ports": [
+          {
+            "containerPort": 8080,
+            "name": "http",
+            "protocol": "TCP"
+          },
+          {
+            "containerPort": 8443,
+            "name": "https",
+            "protocol": "TCP"
+          },
+          {
+            "containerPort": 8877,
+            "name": "admin",
+            "protocol": "TCP"
+          }
+        ],
+        "readinessProbe": {
+          "failureThreshold": 3,
+          "httpGet": {
+            "path": "/ambassador/v0/check_ready",
+            "port": "admin",
+            "scheme": "HTTP"
+          },
+          "initialDelaySeconds": 30,
+          "periodSeconds": 3,
+          "successThreshold": 1,
+          "timeoutSeconds": 1
+        },
+        "resources": {},
+        "terminationMessagePath": "/dev/termination-log",
+        "terminationMessagePolicy": "File",
+        "volumeMounts": [
+          {
+            "mountPath": "/tmp/ambassador-pod-info",
+            "name": "ambassador-pod-info",
+            "readOnly": true
+          },
+          {
+            "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount",
+            "name": "ambassador-token-tjz89",
+            "readOnly": true
+          }
+        ]
+      }
+    ],
+    "dnsPolicy": "ClusterFirst",
+    "enableServiceLinks": true,
+    "nodeName": "docker-desktop",
+    "priority": 0,
+    "restartPolicy": "Always",
+    "schedulerName": "default-scheduler",
+    "securityContext": {
+      "runAsUser": 8888
+    },
+    "serviceAccount": "ambassador",
+    "serviceAccountName": "ambassador",
+    "terminationGracePeriodSeconds": 30,
+    "tolerations": [
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/not-ready",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      },
+      {
+        "effect": "NoExecute",
+        "key": "node.kubernetes.io/unreachable",
+        "operator": "Exists",
+        "tolerationSeconds": 300
+      }
+    ],
+    "volumes": [
+      {
+        "downwardAPI": {
+          "defaultMode": 420,
+          "items": [
+            {
+              "fieldRef": {
+                "apiVersion": "v1",
+                "fieldPath": "metadata.labels"
+              },
+              "path": "labels"
+            }
+          ]
+        },
+        "name": "ambassador-pod-info"
+      },
+      {
+        "name": "ambassador-token-tjz89",
+        "secret": {
+          "defaultMode": 420,
+          "secretName": "ambassador-token-tjz89"
+        }
+      }
+    ]
+  },
+  "status": {
+    "conditions": [
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2020-04-13T18:34:31Z",
+        "status": "True",
+        "type": "Initialized"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2020-04-13T19:12:53Z",
+        "message": "containers with unready status: [ambassador]",
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "Ready"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2020-04-13T19:12:53Z",
+        "message": "containers with unready status: [ambassador]",
+        "reason": "ContainersNotReady",
+        "status": "False",
+        "type": "ContainersReady"
+      },
+      {
+        "lastProbeTime": null,
+        "lastTransitionTime": "2020-04-13T18:34:31Z",
+        "status": "True",
+        "type": "PodScheduled"
+      }
+    ],
+    "containerStatuses": [
+      {
+        "containerID": "docker://3453b4fbfab63ba609e3d06fd35bbd419210863081be6804df103c4f8d9dc710",
+        "image": "quay.io/datawire/ambassador:0.86.1",
+        "imageID": "docker-pullable://quay.io/datawire/ambassador@sha256:273156b337422b846eb42592cd4f430554092f5013483cd0c4266a903d192d6a",
+        "lastState": {
+          "terminated": {
+            "containerID": "docker://164912822b303e3a47e460c67502a8722017b150bedf6621f8f079a6edc0924c",
+            "exitCode": 1,
+            "finishedAt": "2020-04-13T19:12:52Z",
+            "reason": "Error",
+            "startedAt": "2020-04-13T18:34:33Z"
+          }
+        },
+        "name": "ambassador",
+        "ready": false,
+        "restartCount": 1,
+        "state": {
+          "running": {
+            "startedAt": "2020-04-13T19:12:53Z"
+          }
+        }
+      }
+    ],
+    "hostIP": "192.168.65.3",
+    "phase": "Running",
+    "podIP": "10.1.2.173",
+    "qosClass": "BestEffort",
+    "startTime": "2020-04-13T18:34:31Z"
+  }
+}

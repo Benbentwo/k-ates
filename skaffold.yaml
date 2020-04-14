@@ -28,3 +28,24 @@ profiles:
           image.tag: '{{.USER}}'
           project.ambassador.enabled: true
           project.sampleData.enabled: true
+- name: devv
+  build:
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}:{{.USER}}'
+    local: {}
+    artifacts:
+      - image: benbentwo/k-ates
+        context: .
+        docker:
+          dockerfile: Dockerfile.dev
+  deploy:
+    helm:
+      releases:
+        - name: k-ates
+          chartPath: charts/k-ates
+          setValueTemplates:
+            image.repository: '{{.DOCKER_REGISTRY}}/{{.IMAGE_NAME}}'
+            image.tag: '{{.USER}}'
+            project.ambassador.enabled: true
+            project.sampleData.enabled: true

@@ -37,6 +37,8 @@ func Log(level LogLevel, messages ...interface{}) {
 	for _, message := range messages {
 		if msg, typeok := message.(string); typeok {
 			messageTotal += msg
+		} else if e, typeerr := message.(error); typeerr {
+			messageTotal += e.Error()
 		} else {
 			white(message)
 		}

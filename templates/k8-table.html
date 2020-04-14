@@ -28,6 +28,31 @@ ul.breadcrumb li a:hover {
   color: #01447e;
   text-decoration: underline;
 }
+pre {
+    /*display: block;*/
+    /*padding: 9.5px;*/
+    /*margin: 0 0 10px;*/
+    /*font-size: 13px;*/
+    /*line-height: 1.42857143;*/
+    /*color: #333;*/
+    /*word-break: break-all;*/
+    /*word-wrap: break-word;*/
+    /*background-color: #f5f5f5;*/
+    /*border: 1px solid #ccc;*/
+    /*border-radius: 4px;*/
+
+    display: inherit;
+    padding: inherit;
+    margin: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: #333;
+    word-break: inherit;
+    word-wrap: inherit;
+    background-color: inherit;
+    border: none;
+    border-radius:inherit;
+}
 </style>
 </head>
 <body>
@@ -63,7 +88,7 @@ ul.breadcrumb li a:hover {
         {{range .Rows}}
         <tr>
             {{range .}}
-            <td>{{printf "%s" .}}</td>
+            <td><pre>{{.}}</pre></td>
             {{end}}
         </tr>
         {{end}}

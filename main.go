@@ -16,7 +16,6 @@ import (
 //     - Auto would split the url of the page into breadcrumbs
 //     - Manual would allow manual addition of breadcrumbs
 //     - Off just removes the sect.
-//  - Make Html templates actual HTML files and use more modular parts.
 
 var (
 	Log   = util.Log
@@ -27,26 +26,17 @@ var (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	var tmplt templates.Template
+	util.Log(util.INFO, "handler")
 	rootPath := util.GetRootPath()
-	filepath := r.URL.Path[len(rootPath):]
-	Log(DEBUG, util.ColorInfo("FilePath: \"")+filepath+util.ColorInfo("\""))
-	// log.Logger().Infof("FilePath: `%s`", util.ColorInfo(filepath))
-	Log(DEBUG, util.ColorInfo("RootPath: \"")+rootPath+util.ColorInfo("\""))
-
-	if strings.TrimSpace(filepath) == "" {
-		Log(DEBUG, "Display Home Page")
-		tmplt = templates.HOME
-		util.LoadTemplate(w, tmplt, templates.Home{
-			Filename: "Home Page",
-			Headers: []templates.ButtonLinks{
-				{
-					Text: "Kubectl",
-					Href: "/kubectl",
-				},
+	util.LoadTemplate(w, templates.HOME, templates.Home{
+		Filename: "Home Page",
+		Headers: []templates.ButtonLinks{
+			{
+				Text: "Kubectl",
+				Href: rootPath + "kubectl",
 			},
-		})
-	}
+		},
+	})
 
 }
 func loadCSVFileData(w http.ResponseWriter, r *http.Request, filepath string) (parsers.Table, error) {
@@ -83,6 +73,7 @@ func loadCSVFileData(w http.ResponseWriter, r *http.Request, filepath string) (p
 func main() {
 	root := util.GetRootPath()
 	err := templates.InitTemplates()
+	util.Log(util.DEBUG, "init templates")
 	if err != nil {
 		panic(err)
 	}
@@ -90,9 +81,12 @@ func main() {
 	if port == "" {
 		port = "80"
 	}
+	kubectl.NewKubectl()
 
 	http.HandleFunc(root, handler)
 	http.HandleFunc(root+"kubectl/", kubectl.Handler)
+	// http.HandleFunc(root+"kubectl/context", kubectl.HandleNewContext)
 	http.HandleFunc(root+"kubectl/get/pods/", kubectl.GetPodsHandler)
+
 	_ = http.ListenAndServe(":"+port, nil)
 }

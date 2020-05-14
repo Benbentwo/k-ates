@@ -145,6 +145,5 @@ jobs:
         env:
           CR_TOKEN: "${{ secrets.CR_TOKEN }}"
         with:
-          version: ${{steps.increment-semver-patch.outputs.version}}
           charts_dir: charts/${{steps.docker_build.outputs.repo}}/
           charts_repo_url: https://benbentwo.github.io/Helm-Repo/

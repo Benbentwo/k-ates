@@ -81,6 +81,7 @@ jobs:
           github_image=${repository}/${repo}
           docker build -t docker.pkg.github.com/${github_image} .
           echo "##[set-output name=version;]$(echo ${tag})"
+          echo "##[set-output name=repo;]$(echo ${repo})"
           echo "##[set-output name=github_image;]$(echo ${github_image})"
 
         id: docker_build
@@ -119,7 +120,7 @@ jobs:
           file_glob: true
 
       - run: |
-          repo=$(echo ${{github.repository}} | awk -F '/' '{ print $2 }' | tr '[:upper:]' '[:lower:]')
+          repo=${{steps.docker_build.outputs.repo}}
 
           sed -E -i 's@(repository: \w*)@repository: docker.pkg.github.com/${{ steps.docker_build.outputs.github_image }}@g' charts/${repo}/values.yaml
           sed -E -i 's@(tag: \w*)@tag: ${{steps.docker_build.outputs.version}}@g' charts/${repo}/values.yaml
@@ -138,3 +139,12 @@ jobs:
           tag: ${{steps.increment-semver-patch.outputs.version}}
           file_glob: false
           asset_name: ${{steps.helm-package.outputs.helm_package}}
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.0.0-rc.1
+        env:
+          CR_TOKEN: "${{ secrets.CR_TOKEN }}"
+        with:
+          version: ${{steps.increment-semver-patch.outputs.version}}
+          charts_dir: charts/${{steps.docker_build.outputs.repo}}/
+          charts_repo_url: https://benbentwo.github.io/Helm-Repo/

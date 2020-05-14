@@ -1,62 +1,99 @@
+GIT_SERVER 	:= github.com
+ORG			:= Benbentwo
+NAME 		:= k-ates
+
+
+VERSION_REPO := $(GIT_SERVER)/$(ORG)/$(NAME)
+# Make does not offer a recursive wildcard function, so here's one:
+rwildcard=$(wildcard $1$2) $(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2))
+
 SHELL := /bin/bash
-GO := GO15VENDOREXPERIMENT=1 go
-NAME := k-ates
-OS := $(shell uname)
-MAIN_GO := main.go
-ROOT_PACKAGE := $(GIT_PROVIDER)/benbentwo/$(NAME)
+BUILD_TARGET = build
+MAIN_SRC_FILE=main.go
+GO := GO111MODULE=on go
+GO_NOMOD :=GO111MODULE=off go
 GO_VERSION := $(shell $(GO) version | sed -e 's/^[^0-9.]*\([0-9.]*\).*/\1/')
-PACKAGE_DIRS := $(shell $(GO) list ./... | grep -v /vendor/)
-PKGS := $(shell go list ./... | grep -v /vendor | grep -v generated)
-BUILDFLAGS := ''
+GO_DEPENDENCIES := $(call rwildcard,pkg/,*.go) $(call rwildcard,*.go)
+
+REV := $(shell git rev-parse --short HEAD 2> /dev/null || echo 'unknown')
+ORG_REPO := $(ORG)/$(NAME)
+ROOT_PACKAGE := $(GIT_SERVER)/$(ORG_REPO)
+
+BRANCH     := $(shell git rev-parse --abbrev-ref HEAD 2> /dev/null  || echo 'unknown')
+BUILD_DATE := $(shell date +%Y%m%d-%H:%M:%S)
 CGO_ENABLED = 0
-VENDOR_DIR=vendor
 
-all: build
+REPORTS_DIR=$(BUILD_TARGET)/reports
 
-check: fmt build test
+GOTEST := $(GO) test
+# If available, use gotestsum which provides more comprehensive output
+# This is used in the CI builds
+ifneq (, $(shell which gotestsum 2> /dev/null))
+GOTESTSUM_FORMAT ?= standard-quiet
+GOTEST := GO111MODULE=on gotestsum --junitfile $(REPORTS_DIR)/integration.junit.xml --format $(GOTESTSUM_FORMAT) --
+endif
 
-build:
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) build -ldflags $(BUILDFLAGS) -o bin/$(NAME) $(MAIN_GO)
+# set dev version unless VERSION is explicitly set via environment
+VERSION ?= $(shell echo "$$(git describe --abbrev=0 --tags 2>/dev/null)-dev+$(REV)" | sed 's/^v//')
 
-test: 
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) test $(PACKAGE_DIRS) -test.v
+BUILDFLAGS :=  -ldflags \
+		" -X $(ROOT_PACKAGE)/util.Version=$(VERSION)"
 
-full: $(PKGS)
+.PHONY: list
+list: ## List all make targets
+	@$(MAKE) -pRrn : -f $(MAKEFILE_LIST) 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | sort
 
-install:
-	GOBIN=${GOPATH}/bin $(GO) install -ldflags $(BUILDFLAGS) $(MAIN_GO)
+.PHONY: help
+.DEFAULT_GOAL := help
+help:
+	@grep -h -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-fmt:
-	@FORMATTED=`$(GO) fmt $(PACKAGE_DIRS)`
-	@([[ ! -z "$(FORMATTED)" ]] && printf "Fixed unformatted files:\n$(FORMATTED)") || true
+print-version: ## Print version
+	@echo $(VERSION)
 
-clean:
-	rm -rf build release
+build: $(GO_DEPENDENCIES) ## Build binary for current OS
+	CGO_ENABLED=$(CGO_ENABLED) $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME) $(MAIN_SRC_FILE)
+	chmod +rwx build/$(NAME)
 
-linux:
-	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 $(GO) build -ldflags $(BUILDFLAGS) -o bin/$(NAME) $(MAIN_GO)
+tidy-deps: ## Cleans up dependencies
+	$(GO) mod tidy
+	# mod tidy only takes compile dependencies into account, let's make sure we capture tooling dependencies as well
+	@$(MAKE) install-generate-deps
 
-.PHONY: release clean
+install: $(GO_DEPENDENCIES) ## Install the binary
+	GOBIN=${GOPATH}/bin $(GO) install $(MAIN_SRC_FILE)
 
-FGT := $(GOPATH)/bin/fgt
-$(FGT):
-	go get github.com/GeertJohan/fgt
+linux: ## Build for Linux
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-amd64 $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-linux-amd64
 
-GOLINT := $(GOPATH)/bin/golint
-$(GOLINT):
-	go get github.com/golang/lint/golint
+arm: ## Build for ARM
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-linux-arm $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-linux-arm
 
-$(PKGS): $(GOLINT) $(FGT)
-	@echo "LINTING"
-	@$(FGT) $(GOLINT) $(GOPATH)/src/$@/*.go
-	@echo "VETTING"
-	@go vet -v $@
-	@echo "TESTING"
-	@go test -v $@
+win: ## Build for Windows
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-amd64.exe $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-windows-amd64.exe
 
-.PHONY: lint
-lint: vendor | $(PKGS) $(GOLINT) # ❷
-	@cd $(BASE) && ret=0 && for pkg in $(PKGS); do \
-	    test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
-	done ; exit $$ret
+win32:
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=windows GOARCH=386 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-windows-386.exe $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-windows-386.exe
 
+darwin: ## Build for OSX
+	CGO_ENABLED=$(CGO_ENABLED) GOOS=darwin GOARCH=amd64 $(GO) $(BUILD_TARGET) $(BUILDFLAGS) -o build/$(NAME)-darwin-amd64 $(MAIN_SRC_FILE)
+	chmod +x build/$(NAME)-darwin-amd64
+
+.PHONY: clean
+clean: ## Clean the generated artifacts
+	rm -rf build release dist
+
+fmt: ## Format the code
+	$(eval FORMATTED = $(shell $(GO) fmt ./...))
+	@if [ "$(FORMATTED)" == "" ]; \
+      	then \
+      	    echo "All Go files properly formatted"; \
+      	else \
+      		echo "Fixed formatting for: $(FORMATTED)"; \
+      	fi
+
+all: linux arm win win32 darwin

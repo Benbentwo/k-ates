@@ -46,6 +46,7 @@ func GetClientSet(config *rest.Config) *kubernetes.Clientset {
 	return clientset
 }
 func getClientSetFromOutOfCluster() *rest.Config {
+	util.Log(util.DEBUG, "Trying to load local config access")
 	var kubeconfig *string
 	if home := util.HomeDir(); home != "" {
 		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
@@ -55,6 +56,8 @@ func getClientSetFromOutOfCluster() *rest.Config {
 	flag.Parse()
 
 	// use the current context in kubeconfig
+
+	util.Log(util.DEBUG, *kubeconfig)
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		panic(err.Error())

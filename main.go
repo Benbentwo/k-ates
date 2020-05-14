@@ -88,5 +88,8 @@ func main() {
 	// http.HandleFunc(root+"kubectl/context", kubectl.HandleNewContext)
 	http.HandleFunc(root+"kubectl/get/pods/", kubectl.GetPodsHandler)
 
-	_ = http.ListenAndServe(":"+port, nil)
+	err = http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		util.Log(util.ERROR, err)
+	}
 }

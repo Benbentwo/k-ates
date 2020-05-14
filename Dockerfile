@@ -1,4 +1,4 @@
-FROM golang:1.12.4 AS builder
+FROM golang:1.13 AS builder
 
 
 # Build Args
@@ -18,11 +18,17 @@ ARG target_arch=amd64
 
 # Build the server Binary
 WORKDIR /go/src/${GIT_SERVER}/${GIT_ORG}/${GIT_REPO}
-ADD . ./
+ADD go.mod ./
+ADD go.sum ./
+ENV GO111MODULE=on
 RUN go get -u ./...
-RUN CGO_ENABLED=0 GOOS=${target_os} GOARCH=${target_arch} go build -a -o /app/${binary_name} main.go
+ADD . ./
+RUN make build
+#RUN ls -l /go/src/${GIT_SERVER}/${GIT_ORG}/${GIT_REPO}/build/${binary_name}
+RUN mkdir -p /build/
+RUN cp /go/src/${GIT_SERVER}/${GIT_ORG}/${GIT_REPO}/build/${binary_name} /build/k-ates
+#RUN CGO_ENABLED=0 GOOS=${target_os} GOARCH=${target_arch} go build -a -o /app/${binary_name} main.go
 
-RUN ls /app
 #FROM scratch
 
 # Default to localhost
@@ -32,13 +38,14 @@ ARG root=/
 ENV PORT=$port
 ENV ROOT=$root
 
-WORKDIR /app/
+WORKDIR /build/
 #COPY --from=builder /app/${binary_name} .
-RUN ["chmod", "-R", "+x", "/app"]
+#RUN ["chmod", "-R", "+x", "/app"]
 EXPOSE ${PORT}
+COPY ./templates /build/templates
 
-RUN ls -la /app
-CMD /app/k-ates
+RUN ls -laR /build
+CMD /build/k-ates
 #ENTRYPOINT ["cat", "/dev/null"]
 #ENTRYPOINT /app/${binary_name}
 #CMD 'go run main.go'

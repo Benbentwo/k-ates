@@ -52,6 +52,7 @@ func GetPodsHandler(w http.ResponseWriter, r *http.Request) {
 			// },
 		},
 		Headers: []string{},
+		Version: util.Version,
 	}
 	pods, err := kubectl.GetPods("")
 	if err != nil {

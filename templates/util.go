@@ -66,6 +66,7 @@ type K8Template struct {
 	BreadCrumbs []ButtonLinks
 	Headers     []string
 	Rows        [][]string
+	Version     string
 }
 type TableTemplate struct {
 	Filename string

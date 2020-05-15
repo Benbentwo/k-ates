@@ -140,10 +140,16 @@ jobs:
           file_glob: false
           asset_name: ${{steps.helm-package.outputs.helm_package}}
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.0.0-rc.1
-        env:
-          CR_TOKEN: "${{ secrets.CR_TOKEN }}"
+      - name: Run Helm Release (Different Repository)
+        uses: peter-evans/repository-dispatch@v1
         with:
-          charts_dir: charts/${{steps.docker_build.outputs.repo}}/
-          charts_repo_url: https://benbentwo.github.io/Helm-Repo/
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          repository: Benbentwo/Helm-Repo
+          event-type: upload-helm
+          client-payload: '
+            {
+              "repository": "${{steps.docker_build.outputs.repo}}",
+              "helm_chart": "${{steps.helm-package.outputs.helm_package}}",
+              "chart_url": "https://github.com/${{github.repository}}/releases/download/${{steps.docker_build.outputs.version}}/${{steps.docker_build.outputs.repo}}-${{steps.docker_build.outputs.version}}.tgz",
+              "version": "${{steps.docker_build.outputs.version}}"
+            }'
